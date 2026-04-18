@@ -1,0 +1,65 @@
+STATUS DA IMPLEMENTACAO SUPABASE (MVP 80/20)
+
+O que foi implementado agora:
+
+1) Banco remoto ativo no Supabase
+- Migration criada em `supabase/migrations/20260424120000_beca_mvp.sql`.
+- Ajuste de funcao para safe-update em `supabase/migrations/20260424123000_beca_fix_safeupdate.sql`.
+
+2) Estrutura de dados no banco
+- Tabelas:
+  - beca_products
+  - beca_product_lots
+  - beca_orders
+  - beca_equipments
+  - beca_metrics
+  - beca_stock_moves
+  - beca_audit_logs
+
+3) RPCs para sincronizacao de estado
+- `beca_get_app_state()`
+- `beca_replace_app_state(jsonb)`
+
+4) Politicas e acesso
+- RLS habilitado nas tabelas.
+- Isolamento por tenant implementado.
+- Escrita restrita por role (`admin` e `operacao`).
+- Role `leitura` sem permissao de escrita.
+
+5) Frontend conectado ao Supabase
+- Cliente em `src/lib/supabaseClient.js`.
+- Servico remoto em `src/services/remoteState.js`.
+- `StoreContext` sincronizando com Supabase:
+  - hidrata estado remoto ao iniciar
+  - faz seed remoto quando vazio
+  - persiste alteracoes automaticamente com debounce
+
+6) Seed inicial aplicado no banco
+- Dados de `src/data/mockDB.js` enviados para o estado remoto.
+
+7) Hardening de autenticacao
+- Login real por e-mail/senha no frontend.
+- Bootstrapping de usuario/tenant via `beca_bootstrap_user`.
+- Auth anonima desabilitada no projeto.
+- `mailer_autoconfirm` habilitado para onboarding rapido do MVP.
+
+8) Gestao de acessos por admin
+- Tela de gestão em `src/pages/Acessos.jsx` (rota `/acessos`).
+- Funções SQL para gestão de membros e papel:
+  - `beca_list_memberships()`
+  - `beca_add_member_by_email(...)`
+  - `beca_set_member_role(...)`
+  - `beca_remove_member(...)`
+- Hardening por role aplicado nas policies e escrita de estado.
+
+9) Validacoes locais
+- Lint: OK
+- Build: OK
+
+Observacoes importantes
+- O arquivo `.env.local` precisa existir localmente com:
+  - VITE_SUPABASE_URL
+  - VITE_SUPABASE_ANON_KEY
+- O arquivo `.env.supabase` e usado para operacoes administrativas (management API).
+- `.env.supabase` esta em `.gitignore` e nao deve ser versionado.
+- O proximo hardening recomendado e remover `mailer_autoconfirm` quando o fluxo de e-mail estiver pronto.

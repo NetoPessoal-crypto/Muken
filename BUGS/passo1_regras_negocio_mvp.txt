@@ -1,0 +1,146 @@
+PASSO 1 - REGRAS OFICIAIS DE NEGOCIO (MVP 80/20)
+
+Objetivo
+- Definir regras unicas para pedido, estoque, producao e estorno.
+- Evitar ambiguidade de comportamento no frontend e backend.
+
+--------------------------------------------------
+1) DADOS MESTRES
+--------------------------------------------------
+1.1 Produto
+- Tipos permitidos: ingrediente, embalagem, produto_final.
+- Campos obrigatorios: id, nome, sku, tipo, unidade.
+- `sku` deve ser unico por empresa.
+
+1.2 Receita (apenas para produto_final)
+- Toda receita deve ter: rendimento > 0, lista de ingredientes, unidade de saida.
+- Cada ingrediente da receita deve conter: produtoId, uso, unidade_uso, perda_pct.
+- `uso` deve ser maior que 0.
+- `perda_pct` minimo 0 e maximo 100.
+
+1.3 Unidades e conversoes oficiais
+- Massa: kg <-> g.
+- Volume: l <-> ml.
+- Contagem: unidade <-> dz.
+- Nao pode converter massa para volume (e vice-versa) sem regra explicita de densidade.
+
+--------------------------------------------------
+2) ESTOQUE
+--------------------------------------------------
+2.1 Controle por lote
+- Todo item de estoque movimentavel deve estar em um ou mais lotes.
+- Lote deve ter: loteId, quantidade, validade (quando aplicavel), custo_unitario.
+
+2.2 Movimentacoes permitidas
+- ENTRADA: compra/recebimento.
+- SAIDA: consumo, perda, transferencia, expedicao.
+- AJUSTE: correcao de inventario (obrigatorio motivo).
+- ESTORNO: reversao de movimento anterior (obrigatorio vinculo ao movimento origem).
+
+2.3 Regra de saldo
+- Nenhuma movimentacao pode gerar saldo negativo.
+- Se faltar estoque, operacao deve falhar com motivo claro.
+
+2.4 Estrategia de baixa
+- Padrao MVP: FIFO por data de entrada do lote.
+- Lotes com quantidade zero podem ser encerrados/historicizados.
+
+--------------------------------------------------
+3) PEDIDOS
+--------------------------------------------------
+3.1 Criacao de pedido
+- Campos obrigatorios: cliente, produto_final_id, quantidade, data_criacao.
+- `quantidade` deve ser maior que 0.
+
+3.2 Status oficiais
+- pendente
+- producao
+- logistica
+- concluido
+- cancelado
+
+3.3 Transicoes permitidas
+- pendente -> producao
+- producao -> logistica
+- logistica -> concluido
+- pendente -> cancelado
+- producao -> cancelado (somente com permissao)
+- logistica -> cancelado (somente com permissao)
+
+3.4 Transicoes proibidas
+- Nao pular etapas (ex.: pendente -> logistica).
+- Nao alterar pedido concluido (exceto processos administrativos auditados).
+
+--------------------------------------------------
+4) PRODUCAO
+--------------------------------------------------
+4.1 Disparo da producao
+- Ao mover pedido para `producao`, deve ocorrer tentativa de baixa de insumos via receita.
+
+4.2 Calculo de necessidade
+- fornadas = teto(quantidade_pedido / rendimento_receita).
+- consumo_item = uso * fornadas * (1 + perda_pct/100).
+- Aplicar conversao para unidade base do item de estoque antes da baixa.
+
+4.3 Resultado da baixa
+- Se todos os insumos estiverem disponiveis: baixa confirmada e pedido permanece em producao.
+- Se faltar qualquer insumo: nao baixa parcialmente no MVP; operacao falha de forma atomica.
+
+4.4 Geracao de lote final
+- Producao confirmada deve gerar lote de produto_final com quantidade produzida.
+- Quantidade produzida padrao MVP: rendimento * fornadas.
+
+--------------------------------------------------
+5) CANCELAMENTO E ESTORNO
+--------------------------------------------------
+5.1 Cancelamento sem baixa aplicada
+- Se pedido ainda nao baixou insumos, cancelar so altera status para `cancelado`.
+
+5.2 Cancelamento com baixa aplicada
+- Deve gerar estorno automatico dos movimentos de consumo vinculados ao pedido.
+- Estorno deve restaurar quantidades no estoque respeitando rastreabilidade.
+
+5.3 Concluido
+- Pedido concluido nao pode ser cancelado pelo fluxo comum.
+- Qualquer reversao de concluido exige permissao administrativa e trilha de auditoria.
+
+--------------------------------------------------
+6) AUDITORIA E RASTREABILIDADE
+--------------------------------------------------
+- Toda acao critica deve registrar:
+  - usuario,
+  - data/hora,
+  - entidade afetada,
+  - antes/depois,
+  - motivo (quando ajuste/cancelamento).
+- Pedido deve manter historico de status e eventos.
+- Movimento de estoque deve referenciar origem (pedido, producao, ajuste, estorno).
+
+--------------------------------------------------
+7) VALIDACOES MINIMAS DE ENTRADA
+--------------------------------------------------
+- Nao aceitar nome vazio para produto, receita ou cliente.
+- Nao aceitar valores negativos para quantidade, custo e uso.
+- Nao aceitar receita sem ingredientes.
+- Nao aceitar criacao de pedido para produto que nao seja `produto_final`.
+
+--------------------------------------------------
+8) REGRAS DE EXCLUSAO (MVP)
+--------------------------------------------------
+- Produto com historico de movimento NAO pode ser excluido fisicamente.
+- Nesses casos, usar inativacao logica (ativo=false).
+- Receita com historico tambem deve ser versionada/inativada, nao removida.
+
+--------------------------------------------------
+9) COMPORTAMENTOS DE FALHA (MVP)
+--------------------------------------------------
+- Operacoes criticas devem ser atomicas (tudo ou nada).
+- Mensagens de erro devem indicar causa objetiva (ex.: estoque insuficiente do item X).
+- Dados invalidos persistidos devem acionar fallback seguro sem quebrar sistema.
+
+--------------------------------------------------
+10) DEFINICAO DO QUE E SUCESSO NO PASSO 1
+--------------------------------------------------
+- Time valida e concorda com este documento.
+- Backend e frontend passam a implementar estas regras como fonte unica.
+- Toda nova funcionalidade deve apontar para qual regra deste documento ela cumpre.

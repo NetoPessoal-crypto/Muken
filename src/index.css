@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #5D4037;
+  --color-on-primary: #ffffff;
+  --color-secondary: #FF8A80;
+  --color-surface: #fef0f1;
+  --color-surface-container-low: #fff8f7;
+  --color-surface-container-lowest: #ffffff;
+  --color-outline: #8D7873;
+  --color-tertiary: #80CBC4;
+  --color-error: #FF5252;
+  --color-background: #fef0f1;
+
+  --radius-DEFAULT: 1.5rem;
+  --radius-lg: 2.5rem;
+  --radius-xl: 4rem;
+  --radius-full: 9999px;
+
+  --font-sans: 'Plus Jakarta Sans', sans-serif;
+}
+
+body {
+    min-height: max(884px, 100dvh);
+    background-color: var(--color-background);
+    color: var(--color-primary);
+}
+
+.glass-header {
+    background: rgba(255, 248, 247, 0.8);
+    backdrop-filter: blur(20px);
+}
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--color-surface); }
+::-webkit-scrollbar-thumb { background: #5D403720; border-radius: 10px; }
+
+/* Custom typography from Stitch Design System */
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+.lufga-bold { font-weight: 800; letter-spacing: -0.02em; }
+.lufga-medium { font-weight: 600; }
+.lufga-regular { font-weight: 400; }
+.lufga-semibold-caps { font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* Dashboard Equipments Circular Gauge */
+.circular-gauge { position: relative; width: 120px; height: 120px; }
+.circular-gauge svg { transform: rotate(-90deg); }

@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+
+<html lang="pt-br"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error-dim": "#4e0309",
+                    "surface-dim": "#d4dbdd",
+                    "surface-container-low": "#f3f4f4",
+                    "primary-dim": "#4f535a",
+                    "surface": "#E4E4E4",
+                    "primary-fixed-dim": "#d1d4dd",
+                    "on-secondary-fixed": "#1c3f72",
+                    "primary": "#10141A",
+                    "surface-container-highest": "#dee3e4",
+                    "error": "#CE6969",
+                    "on-tertiary-fixed": "#330005",
+                    "tertiary": "#9c4244",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-tint": "#5b5e66",
+                    "secondary-fixed-dim": "#c0d5ff",
+                    "on-secondary-container": "#315285",
+                    "secondary": "#83A2DB",
+                    "surface-container-high": "#e5e9ea",
+                    "surface-container": "#eceeef",
+                    "on-error-container": "#752121",
+                    "tertiary-fixed-dim": "#ed8181",
+                    "error-container": "#fe8983",
+                    "inverse-on-surface": "#9c9d9d",
+                    "on-primary-container": "#4e5259",
+                    "surface-variant": "#dee3e4",
+                    "on-tertiary": "#fff7f6",
+                    "on-error": "#fff7f6",
+                    "tertiary-dim": "#8d3739",
+                    "on-secondary-fixed-variant": "#3c5c90",
+                    "inverse-surface": "#0d0f0f",
+                    "on-primary-fixed": "#3c3f46",
+                    "on-surface-variant": "#5a6061",
+                    "secondary-fixed": "#d6e3ff",
+                    "on-surface": "#2d3335",
+                    "secondary-container": "#d6e3ff",
+                    "on-primary": "#f6f7ff",
+                    "surface-bright": "#f9f9f9",
+                    "on-secondary": "#f8f8ff",
+                    "outline": "#767c7d",
+                    "primary-container": "#dfe2eb",
+                    "background": "#E4E4E4",
+                    "inverse-primary": "#ebeef7",
+                    "tertiary-fixed": "#fd8e8d",
+                    "tertiary-container": "#fd8e8d",
+                    "outline-variant": "#adb3b4",
+                    "primary-fixed": "#dfe2eb",
+                    "on-tertiary-fixed-variant": "#681b1f",
+                    "secondary-dim": "#335387",
+                    "on-tertiary-container": "#5c1217",
+                    "on-primary-fixed-variant": "#585c63",
+                    "on-background": "#2d3335"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Plus Jakarta Sans"],
+                    "body": ["Plus Jakarta Sans"],
+                    "label": ["Plus Jakarta Sans"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #E4E4E4; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .circular-gauge { position: relative; width: 120px; height: 120px; }
+        .circular-gauge svg { transform: rotate(-90deg); }
+        .glass-nav { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); }
+    </style>
+</head>
+<body class="text-on-background selection:bg-secondary/30">
+<!-- SideNavBar (Shared Component) -->
+<aside class="fixed left-0 top-0 flex flex-col items-center py-8 z-40 bg-[#E4E4E4] dark:bg-gray-950 w-20 h-[calc(100vh-2rem)] m-4 rounded-[2rem]">
+<div class="mb-10 opacity-20">
+<span class="material-symbols-outlined text-primary text-3xl">cookie</span>
+</div>
+<nav class="flex flex-col gap-6">
+<button class="text-primary-dim p-3 hover:bg-surface-container-high rounded-full transition-all duration-200">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+</button>
+<button class="text-primary-dim p-3 hover:bg-surface-container-high rounded-full transition-all duration-200">
+<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
+</button>
+<button class="text-primary-dim p-3 hover:bg-surface-container-high rounded-full transition-all duration-200">
+<span class="material-symbols-outlined" data-icon="cookie">cookie</span>
+</button>
+<button class="text-primary-dim p-3 hover:bg-surface-container-high rounded-full transition-all duration-200">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+</button>
+<button class="bg-primary text-white rounded-full p-3 shadow-lg scale-110">
+<span class="material-symbols-outlined" data-icon="precision_manufacturing">precision_manufacturing</span>
+</button>
+<button class="text-primary-dim p-3 hover:bg-surface-container-high rounded-full transition-all duration-200">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+</button>
+</nav>
+<div class="mt-auto">
+<button class="text-error p-3 hover:bg-error-container/10 rounded-full transition-all duration-200">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+</button>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="ml-32 mr-8 pt-4 pb-12">
+<!-- TopAppBar (Shared Component Style) -->
+<header class="sticky top-0 z-50 flex items-center justify-between h-20 w-full max-w-7xl mx-auto glass-nav rounded-full px-8 shadow-[0px_24px_48px_rgba(16,20,26,0.06)] mb-12">
+<div class="flex items-center gap-4">
+<h1 class="text-2xl font-bold tracking-tighter text-primary">CookieFlow</h1>
+<div class="h-6 w-[1px] bg-outline-variant/30 mx-2"></div>
+<h2 class="text-label-sm font-semibold uppercase tracking-widest text-primary/60 text-[10px]">Equipamentos</h2>
+</div>
+<div class="flex-1 max-w-md px-8">
+<div class="relative flex items-center w-full">
+<span class="material-symbols-outlined absolute left-4 text-primary/40">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-full py-2.5 pl-12 pr-4 focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-primary/30" placeholder="Buscar máquinas..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-primary/70">notifications</span>
+</button>
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-surface-container shadow-sm">
+<img class="w-full h-full object-cover" data-alt="Portrait of a male facility manager in professional attire, soft natural studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUgTZ8aqqN7XwskkRPMy7CUuOLc-R7twUg2ZWaMAgcuXe0MglJoq6vtEDZcdiRd5XPltw2-SQRvWbvRuFgTfW7M0TVqV2_xteJ_yEqY6I-qa61a5sKZR_bY2V4WyXyCen0OYaSZYqrIuu9jPVB4guwInYA5QrAwrJEPhOoirVXbwblvRy3KV4UrwwnX6y25QzHAt2NxKm4TOIKilUQiw3kP2FTFoN6_4_pvgvWDVLD2ZwZlEUFW4Gvrq66jwIKYEWt4dwcS4yekVk"/>
+</div>
+</div>
+</header>
+<section class="max-w-7xl mx-auto space-y-12">
+<!-- Bento Grid: Main Insights -->
+<div class="grid grid-cols-12 gap-8">
+<!-- Hero Feature: Operational Health -->
+<div class="col-span-12 lg:col-span-8 bg-surface-container-lowest rounded-lg p-10 shadow-[0px_24px_48px_rgba(16,20,26,0.06)] relative overflow-hidden group">
+<div class="relative z-10">
+<span class="text-label-sm font-semibold text-secondary uppercase tracking-widest text-xs">Visão Geral</span>
+<h3 class="text-4xl font-bold tracking-tight text-primary mt-2 mb-6">Eficiência da Linha A-12</h3>
+<p class="text-primary/60 max-w-md leading-relaxed mb-8">O monitoramento em tempo real indica que a linha de produção está operando com 94% de eficiência nominal. Nenhuma interrupção crítica prevista para as próximas 24 horas.</p>
+<div class="flex gap-4">
+<button class="bg-primary text-white px-8 py-3 rounded-full font-medium shadow-lg hover:scale-95 transition-transform">Ver Relatório Completo</button>
+<button class="bg-surface-container-low text-primary px-8 py-3 rounded-full font-medium hover:bg-surface-container transition-colors">Calibrar Sensores</button>
+</div>
+</div>
+<div class="absolute right-[-5%] top-[-10%] opacity-10 group-hover:scale-110 transition-transform duration-700 pointer-events-none">
+<span class="material-symbols-outlined text-[320px]" style="font-variation-settings: 'wght' 200;">settings_suggest</span>
+</div>
+</div>
+<!-- Secondary Metric: Active Energy -->
+<div class="col-span-12 lg:col-span-4 bg-primary text-white rounded-lg p-10 flex flex-col justify-between">
+<div>
+<span class="text-label-sm font-semibold opacity-60 uppercase tracking-widest text-xs">Consumo de Energia</span>
+<div class="text-6xl font-bold tracking-tighter mt-4">1.2 <span class="text-2xl font-light opacity-50">MWh</span></div>
+</div>
+<div class="mt-8 space-y-4">
+<div class="flex justify-between items-end border-b border-white/10 pb-2">
+<span class="text-sm opacity-60">Pico hoje</span>
+<span class="text-lg font-medium">1.8 MWh</span>
+</div>
+<div class="flex justify-between items-end border-b border-white/10 pb-2">
+<span class="text-sm opacity-60">Média Semanal</span>
+<span class="text-lg font-medium">0.9 MWh</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Detailed Equipment Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+<!-- Machine Card -->
+<div class="bg-surface-container-lowest rounded-lg p-8 shadow-sm hover:shadow-xl transition-shadow duration-300">
+<div class="flex justify-between items-start mb-6">
+<div class="w-12 h-12 bg-surface-container-low rounded-2xl flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">oven_gen</span>
+</div>
+<span class="px-4 py-1.5 bg-secondary/10 text-secondary text-xs font-bold rounded-full">ATIVO</span>
+</div>
+<h4 class="text-xl font-bold text-primary">Forno Industrial 1</h4>
+<p class="text-sm text-primary/40 mt-1 mb-6">Próxima limpeza: 14h</p>
+<div class="space-y-3">
+<div class="flex justify-between text-sm">
+<span class="text-primary/60">Temperatura</span>
+<span class="font-bold">180°C</span>
+</div>
+<div class="w-full bg-surface-container-low h-1 rounded-full overflow-hidden">
+<div class="bg-secondary h-full w-[85%]"></div>
+</div>
+</div>
+</div>
+<!-- Machine Card 2 -->
+<div class="bg-surface-container-lowest rounded-lg p-8 shadow-sm hover:shadow-xl transition-shadow duration-300">
+<div class="flex justify-between items-start mb-6">
+<div class="w-12 h-12 bg-surface-container-low rounded-2xl flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">conveyor_belt</span>
+</div>
+<span class="px-4 py-1.5 bg-secondary/10 text-secondary text-xs font-bold rounded-full">ATIVO</span>
+</div>
+<h4 class="text-xl font-bold text-primary">Esteira de Resfriamento</h4>
+<p class="text-sm text-primary/40 mt-1 mb-6">Ritmo: 450 un/min</p>
+<div class="space-y-3">
+<div class="flex justify-between text-sm">
+<span class="text-primary/60">Velocidade</span>
+<span class="font-bold">92%</span>
+</div>
+<div class="w-full bg-surface-container-low h-1 rounded-full overflow-hidden">
+<div class="bg-secondary h-full w-[92%]"></div>
+</div>
+</div>
+</div>
+<!-- Machine Card 3 (Alert) -->
+<div class="bg-surface-container-lowest rounded-lg p-8 shadow-sm hover:shadow-xl transition-shadow duration-300 border-2 border-transparent hover:border-tertiary/10">
+<div class="flex justify-between items-start mb-6">
+<div class="w-12 h-12 bg-tertiary/10 rounded-2xl flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary">warning</span>
+</div>
+<span class="px-4 py-1.5 bg-tertiary/10 text-tertiary text-xs font-bold rounded-full">ATENÇÃO</span>
+</div>
+<h4 class="text-xl font-bold text-primary">Batedeira Setor Sul</h4>
+<p class="text-sm text-tertiary/60 mt-1 mb-6">Vibração excessiva detectada</p>
+<div class="space-y-3">
+<div class="flex justify-between text-sm">
+<span class="text-primary/60">Estabilidade</span>
+<span class="font-bold text-tertiary">34%</span>
+</div>
+<div class="w-full bg-surface-container-low h-1 rounded-full overflow-hidden">
+<div class="bg-tertiary h-full w-[34%]"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Life Cycle Gauges Section -->
+<div class="space-y-8">
+<div class="flex items-end justify-between border-b border-primary/5 pb-6">
+<div>
+<span class="text-label-sm font-semibold text-primary/40 uppercase tracking-widest text-[10px]">Manutenção Preventiva</span>
+<h3 class="text-3xl font-bold tracking-tight text-primary">Vida Útil dos Equipamentos</h3>
+</div>
+<button class="flex items-center gap-2 text-primary/60 hover:text-primary transition-colors font-semibold">
+<span>Gerenciar Ciclos</span>
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+<!-- Gauge 1 -->
+<div class="bg-surface-container-lowest rounded-[2.5rem] p-6 flex flex-col items-center gap-6 shadow-sm hover:scale-105 transition-transform">
+<div class="circular-gauge">
+<svg class="w-full h-full" viewbox="0 0 36 36">
+<path class="stroke-surface-container" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="3"></path>
+<path class="stroke-secondary" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-dasharray="75, 100" stroke-linecap="round" stroke-width="3"></path>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center flex-col">
+<span class="text-2xl font-bold text-primary leading-none">75%</span>
+</div>
+</div>
+<div class="text-center">
+<h5 class="text-xs font-bold text-primary">Forno Industrial 1</h5>
+<p class="text-[10px] text-primary/40 uppercase font-semibold mt-1">Normal</p>
+</div>
+</div>
+<!-- Gauge 2 (Alert) -->
+<div class="bg-surface-container-lowest rounded-[2.5rem] p-6 flex flex-col items-center gap-6 shadow-sm hover:scale-105 transition-transform ring-2 ring-tertiary/10">
+<div class="circular-gauge">
+<svg class="w-full h-full" viewbox="0 0 36 36">
+<path class="stroke-surface-container" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="3"></path>
+<path class="stroke-tertiary" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-dasharray="15, 100" stroke-linecap="round" stroke-width="3"></path>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center flex-col">
+<span class="text-2xl font-bold text-tertiary leading-none">15%</span>
+</div>
+</div>
+<div class="text-center px-2">
+<h5 class="text-xs font-bold text-primary leading-tight">Batedeira (Manutenção)</h5>
+<p class="text-[10px] text-tertiary uppercase font-semibold mt-1">Crítico</p>
+</div>
+</div>
+<!-- Gauge 3 -->
+<div class="bg-surface-container-lowest rounded-[2.5rem] p-6 flex flex-col items-center gap-6 shadow-sm hover:scale-105 transition-transform">
+<div class="circular-gauge">
+<svg class="w-full h-full" viewbox="0 0 36 36">
+<path class="stroke-surface-container" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="3"></path>
+<path class="stroke-secondary" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-dasharray="88, 100" stroke-linecap="round" stroke-width="3"></path>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center flex-col">
+<span class="text-2xl font-bold text-primary leading-none">88%</span>
+</div>
+</div>
+<div class="text-center">
+<h5 class="text-xs font-bold text-primary">Empacotadora 4</h5>
+<p class="text-[10px] text-primary/40 uppercase font-semibold mt-1">Excelente</p>
+</div>
+</div>
+<!-- Gauge 4 -->
+<div class="bg-surface-container-lowest rounded-[2.5rem] p-6 flex flex-col items-center gap-6 shadow-sm hover:scale-105 transition-transform">
+<div class="circular-gauge">
+<svg class="w-full h-full" viewbox="0 0 36 36">
+<path class="stroke-surface-container" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="3"></path>
+<path class="stroke-secondary" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-dasharray="45, 100" stroke-linecap="round" stroke-width="3"></path>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center flex-col">
+<span class="text-2xl font-bold text-primary leading-none">45%</span>
+</div>
+</div>
+<div class="text-center">
+<h5 class="text-xs font-bold text-primary">Misturador Massa</h5>
+<p class="text-[10px] text-primary/40 uppercase font-semibold mt-1">Atenção</p>
+</div>
+</div>
+<!-- Gauge 5 -->
+<div class="bg-surface-container-lowest rounded-[2.5rem] p-6 flex flex-col items-center gap-6 shadow-sm hover:scale-105 transition-transform">
+<div class="circular-gauge">
+<svg class="w-full h-full" viewbox="0 0 36 36">
+<path class="stroke-surface-container" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="3"></path>
+<path class="stroke-secondary" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-dasharray="92, 100" stroke-linecap="round" stroke-width="3"></path>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center flex-col">
+<span class="text-2xl font-bold text-primary leading-none">92%</span>
+</div>
+</div>
+<div class="text-center">
+<h5 class="text-xs font-bold text-primary">Silo de Grãos</h5>
+<p class="text-[10px] text-primary/40 uppercase font-semibold mt-1">Excelente</p>
+</div>
+</div>
+<!-- Gauge 6 -->
+<div class="bg-surface-container-lowest rounded-[2.5rem] p-6 flex flex-col items-center gap-6 shadow-sm hover:scale-105 transition-transform">
+<div class="circular-gauge">
+<svg class="w-full h-full" viewbox="0 0 36 36">
+<path class="stroke-surface-container" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="3"></path>
+<path class="stroke-secondary" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-dasharray="61, 100" stroke-linecap="round" stroke-width="3"></path>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center flex-col">
+<span class="text-2xl font-bold text-primary leading-none">61%</span>
+</div>
+</div>
+<div class="text-center">
+<h5 class="text-xs font-bold text-primary">Injetora Recheio</h5>
+<p class="text-[10px] text-primary/40 uppercase font-semibold mt-1">Normal</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Contextual FAB -->
+<button class="fixed bottom-10 right-10 bg-primary text-white w-16 h-16 rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50 group">
+<span class="material-symbols-outlined text-3xl group-hover:rotate-90 transition-transform duration-300" data-icon="add">add</span>
+</button>
+</body></html>

@@ -1,0 +1,133 @@
+PLANO DE IMPLEMENTACAO MVP 80/20 (FOCO EM PASSO A PASSO E PRIORIDADE)
+
+Observacao:
+- 80/20 = focar no menor conjunto de entregas que gera maior impacto real para operacao diaria.
+- Este plano prioriza funcionalidade de negocio e confiabilidade antes de refinamentos visuais.
+
+==================================================
+BLOCO 1 - FUNDACAO DO SISTEMA (ESSENCIAL)
+Prioridade: CRITICA
+==================================================
+Passo 1
+- Definir regras oficiais de negocio (pedido, estoque, producao, cancelamento, estorno).
+- Registrar regras em documento unico para alinhar desenvolvimento e validacao.
+
+Passo 2
+- Modelar banco de dados minimo viavel (usuarios, produtos, lotes, receitas, pedidos, movimentos).
+- Criar migracoes e validacoes de integridade.
+
+Passo 3
+- Criar API backend com endpoints principais:
+  - autenticacao,
+  - produtos/lotes,
+  - receitas,
+  - pedidos,
+  - movimentacoes de estoque.
+
+Passo 4
+- Trocar localStorage por persistencia real no frontend (consumo da API).
+- Garantir que o app abra com dados reais e consistentes.
+
+==================================================
+BLOCO 2 - FLUXO OPERACIONAL CORE (ESSENCIAL)
+Prioridade: CRITICA
+==================================================
+Passo 5
+- Implementar controle de estoque com ledger:
+  - entrada,
+  - saida,
+  - ajuste,
+  - perda,
+  - devolucao.
+
+Passo 6
+- Implementar consumo de insumos por receita ao iniciar producao.
+- Aplicar conversao de unidade e perda com regra unica e testada.
+
+Passo 7
+- Implementar fluxo de pedido completo com regras de transicao:
+  pendente -> producao -> logistica -> concluido.
+- Bloquear avancos invalidos e registrar historico de eventos.
+
+Passo 8
+- Implementar estorno seguro em cancelamentos/devolucoes.
+- Garantir que toda alteracao reflita no estoque e no historico.
+
+==================================================
+BLOCO 3 - CONTROLE DE ACESSO E AUDITORIA (ESSENCIAL)
+Prioridade: ALTA
+==================================================
+Passo 9
+- Implementar autenticacao e perfis basicos (admin, operacao, leitura).
+- Proteger rotas e acoes sensiveis por permissao.
+
+Passo 10
+- Implementar auditoria de acoes criticas:
+  - quem,
+  - quando,
+  - antes/depois.
+
+==================================================
+BLOCO 4 - QUALIDADE E CONFIABILIDADE (ESSENCIAL)
+Prioridade: ALTA
+==================================================
+Passo 11
+- Criar testes unitarios para regras criticas:
+  - conversao,
+  - baixa de estoque,
+  - estorno,
+  - transicao de status.
+
+Passo 12
+- Criar testes de integracao API + banco para fluxos principais.
+
+Passo 13
+- Configurar pipeline minima (lint + testes + build) para impedir regressao.
+
+==================================================
+BLOCO 5 - VISIBILIDADE MINIMA DE GESTAO (80/20)
+Prioridade: MEDIA
+==================================================
+Passo 14
+- Substituir placeholders por relatorios MVP:
+  - pedidos por status,
+  - itens em ruptura,
+  - vencimentos proximos,
+  - consumo por periodo.
+
+Passo 15
+- Criar dashboard com indicadores confiaveis vindos do banco.
+
+==================================================
+BLOCO 6 - ENDURECIMENTO OPERACIONAL (APOS MVP)
+Prioridade: MEDIA
+==================================================
+Passo 16
+- Implementar backup/restore e logs estruturados.
+- Adicionar monitoramento de erros e saude da aplicacao.
+
+Passo 17
+- Melhorar UX funcional (loading, erro, validacoes, acessibilidade).
+
+Passo 18
+- Melhorar performance para escala (paginacao, busca server-side, cache).
+
+
+O QUE ENTRA NO MVP 80/20 (CHECKLIST DIRETO)
+Prioridade: MAXIMA
+- Regras de negocio definidas e documentadas.
+- Backend + banco funcionando.
+- Estoque com movimentacao real e rastreavel.
+- Producao consumindo receita com baixa correta.
+- Pedidos com fluxo e bloqueios de status.
+- Login + permissoes basicas.
+- Auditoria minima de acoes criticas.
+- Testes das regras centrais + pipeline minima.
+- Relatorios operacionais basicos (sem BI avancado).
+
+O QUE PODE FICAR PARA DEPOIS DO MVP
+Prioridade: MENOR
+- Relatorios avancados e BI completo.
+- Integracoes externas complexas.
+- Otimizacoes profundas de UX/performance.
+- Funcionalidades administrativas secundarias.

@@ -1,0 +1,46 @@
+{
+  "name": "temp_app",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:smoke": "playwright test e2e/critical-flows.spec.js e2e/operational-flow.spec.js",
+    "preflight:local": "node scripts/preflight-check.mjs .env.local",
+    "preflight:staging": "node scripts/preflight-check.mjs .env.staging",
+    "preflight:production": "node scripts/preflight-check.mjs .env.production",
+    "db:backup": "powershell -ExecutionPolicy Bypass -File scripts/db-backup.ps1",
+    "db:restore": "powershell -ExecutionPolicy Bypass -File scripts/db-restore.ps1",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.104.1",
+    "@tailwindcss/vite": "^4.2.2",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-router-dom": "^7.14.0",
+    "recharts": "^3.8.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@playwright/test": "^1.59.1",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "autoprefixer": "^10.4.27",
+    "eslint": "^9.39.4",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.4.0",
+    "pg": "^8.20.0",
+    "postcss": "^8.5.9",
+    "tailwindcss": "^4.2.2",
+    "vite": "^8.0.4",
+    "vitest": "^4.1.5"
+  }
+}

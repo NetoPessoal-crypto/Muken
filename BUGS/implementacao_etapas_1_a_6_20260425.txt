@@ -1,0 +1,410 @@
+IMPLEMENTACAO COMPLETA - ETAPAS 1 A 6 (SISTEMA OPERACIONAL REAL)
+Data: 2026-04-25
+
+Objetivo solicitado
+- Executar as 6 frentes para sair de "painel bonito" e chegar em sistema funcional de operacao real.
+
+==================================================
+1) TIRAR LOGICA CRITICA DO FRONT E LEVAR PARA BACKEND TRANSACIONAL
+==================================================
+
+Ja entregue nesta execucao:
+- Migrations aplicadas no Supabase remoto usando `.env.supabase`:
+  - `20260425150000_beca_transactional_ops.sql`
+  - `20260425183000_beca_operational_hardening.sql`
+  - `20260425193000_beca_ops_actions_and_inventory.sql`
+- RPCs transacionais ativas para:
+  - criacao de pedido,
+  - transicao de status com baixa/estorno,
+  - movimentacao de estoque,
+  - etapas logisticas,
+  - conclusao com regra de expedicao,
+  - acoes de OP (iniciar/finalizar/cancelar),
+  - inventario ciclico com ajuste.
+
+Arquivos chave:
+- `supabase/migrations/20260425150000_beca_transactional_ops.sql`
+- `supabase/migrations/20260425183000_beca_operational_hardening.sql`
+- `supabase/migrations/20260425193000_beca_ops_actions_and_inventory.sql`
+- `src/services/operationsApi.js`
+- `src/contexts/StoreContext.jsx`
+
+==================================================
+2) FECHAR FLUXO OPERACIONAL PONTA A PONTA (OP + EXPEDICAO)
+==================================================
+
+Entregas:
+- OP real no backend (`beca_production_orders`) com sync por trigger.
+- Tela de Fornos convertida para operacao real:
+  - lista OPs reais,
+  - iniciar OP,
+  - finalizar OP (move pedido para logistica),
+  - cancelar OP (admin).
+- Modulo dedicado de Expedicao criado com checklist:
+  - separado -> conferido -> expedido -> concluido.
+
+Arquivos:
+- `src/pages/Forno.jsx`
+- `src/pages/Expedicao.jsx`
+- `src/App.jsx` (rotas novas)
+- `src/components/Layout.jsx` (navegacao nova)
+
+==================================================
+3) INVENTARIO CICLICO + AJUSTE CONTROLADO
+==================================================
+
+Entregas:
+- RPC `beca_inventory_count(...)` criada no banco:
+  - compara saldo sistema vs fisico,
+  - gera AJUSTE auditado via backend.
+- Tela dedicada de Inventario:
+  - seleciona produto,
+  - informa quantidade fisica,
+  - mostra diferenca,
+  - confirma contagem com justificativa.
+
+Arquivos:
+- `src/pages/Inventario.jsx`
+- `src/services/operationsApi.js`
+- `src/contexts/StoreContext.jsx`
+
+==================================================
+4) ALERTAS OPERACIONAIS AUTOMATICOS
+==================================================
+
+Entregas no Dashboard:
+- Card de "Acoes Pendentes de Operacao" com alertas para:
+  - ruptura de estoque,
+  - pedidos em logistica sem expedicao,
+  - OPs em producao para acompanhamento.
+
+Arquivo:
+- `src/pages/Dashboard.jsx`
+
+==================================================
+5) TESTES E2E DOS FLUXOS CRITICOS (BASE PRATICA)
+==================================================
+
+Entregas:
+- Base Playwright configurada.
+- Suite E2E inicial de fluxo critico de acesso/autenticacao.
+- Browser Chromium instalado localmente e suite executada com sucesso.
+
+Arquivos:
+- `playwright.config.js`
+- `e2e/critical-flows.spec.js`
+- `package.json` (script `test:e2e`)
+
+Resultado local:
+- `npm run test:e2e` -> 3 testes passando.
+
+==================================================
+6) OPERACAO/DEPLOY (PREPARO REAL)
+==================================================
+
+Entregas:
+- Preflight de ambiente por arquivo `.env`.
+- Templates de env para staging/producao.
+- Runbook operacional com rotina diaria e incidente.
+- Backup/restore mantidos e documentados.
+
+Arquivos:
+- `scripts/preflight-check.mjs`
+- `.env.staging.example`
+- `.env.production.example`
+- `OPERACAO_RUNBOOK.md`
+- `scripts/db-backup.ps1`
+- `scripts/db-restore.ps1`
+- `README.md`
+
+==================================================
+EXECUCAO COM .env.supabase
+==================================================
+
+Foi criado script para aplicar migrations direto no remoto:
+- `scripts/apply-supabase-migrations.mjs`
+
+Migrations novas aplicadas com sucesso no projeto remoto:
+- `20260425150000_beca_transactional_ops.sql`
+- `20260425183000_beca_operational_hardening.sql`
+- `20260425193000_beca_ops_actions_and_inventory.sql`
+
+==================================================
+VALIDACAO FINAL LOCAL
+==================================================
+
+- Lint: `npm run lint` -> OK
+- Unit tests: `npm run test` -> OK (7/7)
+- E2E: `npm run test:e2e` -> OK (3/3)
+- Build: `npm run build` -> OK
+
+Observacao:
+- Existe warning de bundle grande no build (nao bloqueante). Proximo hardening recomendado: code splitting de rotas.
+
+==================================================
+RODADA EXTRA - HARDENING DE CONSISTENCIA (MESMA DATA)
+==================================================
+
+Problema atacado:
+- Ainda havia risco de drift por CRUD de produto/receita no frontend + sync por snapshot completo.
+- Conclusao de pedido ainda nao registrava movimento explicito de EXPEDICAO no ledger.
+
+Entregas desta rodada:
+- Nova migration aplicada no Supabase:
+  - `20260425220000_beca_backend_consistency_and_dispatch.sql`
+- Novas RPCs:
+  - `beca_upsert_product(jsonb)`
+  - `beca_delete_or_inactivate_product(text)`
+- `beca_complete_order(...)` atualizada para:
+  - consumir lote(s) de produto final na conclusao,
+  - registrar movimento `EXPEDICAO` no ledger,
+  - falhar se nao houver estoque suficiente para entrega.
+- `beca_get_app_state()` atualizada para incluir `actorUserId` nos `auditLogs`.
+
+Frontend atualizado:
+- `StoreContext` passou a usar RPC remota para produto/receita em ambiente remoto.
+- Sync remoto por snapshot periodico foi desativado quando remoto esta ativo (reduz risco de overwrite concorrente).
+- `Estoque` e `SmartModal` atualizados para fluxo async de CRUD remoto.
+
+Arquivos alterados:
+- `supabase/migrations/20260425220000_beca_backend_consistency_and_dispatch.sql`
+- `src/services/operationsApi.js`
+- `src/contexts/StoreContext.jsx`
+- `src/pages/Estoque.jsx`
+- `src/components/SmartModal.jsx`
+
+Validacao desta rodada:
+- `npm run lint` -> OK
+- `npm run test` -> OK
+- `npm run test:e2e` -> OK
+- `npm run build` -> OK
+
+==================================================
+RODADA EXTRA 2 - BACKEND-FIRST DE PRODUTO E RASTREIO DE EXPEDICAO
+==================================================
+
+Objetivo:
+- Reduzir dependencia de estado local para produto/receita.
+- Fechar rastreabilidade de expedicao no ledger.
+
+Entregas:
+- Nova migration aplicada no Supabase remoto:
+  - `20260425220000_beca_backend_consistency_and_dispatch.sql`
+- `beca_get_app_state()` reescrita para incluir `actorUserId` em `auditLogs`.
+- Novas RPCs de consistencia:
+  - `beca_upsert_product(jsonb)`
+  - `beca_delete_or_inactivate_product(text)`
+- `beca_complete_order(...)` reforcada para:
+  - gerar baixa por lote de produto final,
+  - registrar movimento `EXPEDICAO`,
+  - impedir conclusao sem saldo suficiente.
+
+Frontend atualizado:
+- `StoreContext` agora usa RPC remota para CRUD de produto quando remoto esta ativo.
+- Persistencia periodica de snapshot completo foi desligada para modo remoto (evita overwrite concorrente).
+- `Estoque` e `SmartModal` atualizados para fluxo async no CRUD remoto.
+
+Arquivos alterados:
+- `supabase/migrations/20260425220000_beca_backend_consistency_and_dispatch.sql`
+- `src/services/operationsApi.js`
+- `src/contexts/StoreContext.jsx`
+- `src/pages/Estoque.jsx`
+- `src/components/SmartModal.jsx`
+
+Teste E2E reforcado:
+- Novo arquivo `e2e/operational-flow.spec.js` para validar renderizacao do checklist logistico operacional.
+
+Validacao final da rodada:
+- `npm run lint` -> OK
+- `npm run test` -> OK
+- `npm run test:e2e` -> OK (4/4)
+- `npm run build` -> OK
+
+==================================================
+RODADA EXTRA 3 - E2E SMOKE NO CI
+==================================================
+
+Objetivo:
+- Evitar regressao silenciosa de fluxo critico no pipeline.
+
+Entregas:
+- CI atualizado com job dedicado `e2e-smoke` apos `quality`.
+- Instala Chromium no runner e executa suite smoke via Playwright.
+- Upload de artefatos (`test-results`, `playwright-report`) em caso de falha.
+- Novo script npm:
+  - `test:e2e:smoke`
+
+Arquivos alterados:
+- `.github/workflows/ci.yml`
+- `package.json`
+
+==================================================
+RODADA EXTRA 4 - FEFO/FIFO (BASE DE RASTREABILIDADE)
+==================================================
+
+Objetivo:
+- Iniciar fechamento da pendencia de regra operacional de lote (FEFO/FIFO) para saida/expedicao.
+
+Entregas:
+- Nova migration criada:
+  - `20260425233000_beca_fefo_priority_core.sql`
+- `beca_stock_move(...)` atualizado para priorizar consumo por:
+  - validade ascendente (FEFO)
+  - fallback por `created_at` (FIFO)
+- `beca_complete_order(...)` atualizado com a mesma prioridade FEFO/FIFO para baixa de produto final na expedicao/conclusao.
+- Regra local de fallback (`consumeFromLotesAtomic`) atualizada para priorizar FEFO quando houver validade.
+- Teste unitario adicionado para validar priorizacao FEFO.
+
+Arquivos alterados:
+- `supabase/migrations/20260425233000_beca_fefo_priority_core.sql`
+- `src/utils/businessRules.js`
+- `src/utils/businessRules.test.js`
+
+==================================================
+RODADA EXTRA 5 - CUSTO POR LOTE (BASE)
+==================================================
+
+Objetivo:
+- Fechar base de custo por lote no backend e expor custo para analise operacional.
+
+Entregas:
+- Nova migration criada:
+  - `20260426000000_beca_lot_cost_and_traceability.sql`
+- Schema:
+  - `beca_product_lots.unit_cost`
+  - `beca_stock_moves.unit_cost`
+  - `beca_stock_moves.total_cost`
+- Backfill inicial de custo para lotes e movimentos historicos.
+- `beca_stock_move(...)` atualizado para registrar custo unitario/total por linha de movimento.
+- `beca_complete_order(...)` atualizado para registrar custo de expedicao por lote.
+- `beca_get_app_state()` atualizado para retornar:
+  - `lotes[].unitCost`
+  - `stockMoves[].unitCost`
+  - `stockMoves[].totalCost`
+- Frontend:
+  - `getValorPatrimonial` passou a usar custo por lote (fallback para custo do produto).
+  - Relatorios ganharam KPI `Valor em Estoque`.
+
+Arquivos alterados:
+- `supabase/migrations/20260426000000_beca_lot_cost_and_traceability.sql`
+- `src/contexts/StoreContext.jsx`
+- `src/pages/Relatorio.jsx`
+
+==================================================
+RODADA EXTRA 6 - COBERTURA DE TESTE DE INTEGRACAO (CAMADA API)
+==================================================
+
+Objetivo:
+- Aumentar confianca na integracao frontend -> Supabase RPC sem depender apenas de E2E.
+
+Entregas:
+- Novo teste da camada `operationsApi` com mock de cliente Supabase para validar contrato de RPC:
+  - criacao de pedido,
+  - movimentacao de estoque,
+  - tratamento de erro em conclusao de pedido.
+
+Arquivos alterados:
+- `src/services/operationsApi.test.js`
+
+Status E2E full:
+- Tentativa de E2E full ponta a ponta iniciada, mas comportamento ainda intermitente nas acoes de escrita remota (modal nao fecha de forma deterministica em ambiente de teste).
+- Mantido gate estavel no CI com smoke E2E + suites unitarias.
+
+Validacao desta rodada:
+- `npm run lint` -> OK
+- `npm run test` -> OK (11/11)
+- `npm run test:e2e:smoke` -> OK (4/4)
+- `npm run build` -> OK
+
+==================================================
+RODADA EXTRA 7 - EVENTOS DE EQUIPAMENTO (FORNOS)
+==================================================
+
+Objetivo:
+- Fechar lacuna de eventos reais de equipamento no modulo de Fornos.
+
+Entregas:
+- Nova migration aplicada no Supabase remoto:
+  - `20260426013000_beca_equipment_events.sql`
+- Backend:
+  - tabela `beca_equipment_events` com RLS por tenant,
+  - RPC `beca_log_equipment_event(...)`,
+  - RPC `beca_list_equipment_events(...)`,
+  - atualizacao automatica de status do equipamento por evento.
+- Frontend Fornos:
+  - painel de eventos por equipamento,
+  - botoes operacionais (Parada, Manutencao, Quebra, Retomada),
+  - timeline de eventos recentes.
+
+Arquivos alterados:
+- `supabase/migrations/20260426013000_beca_equipment_events.sql`
+- `src/services/operationsApi.js`
+- `src/pages/Forno.jsx`
+- `BUGS/falta_sistema.txt`
+
+==================================================
+RODADA EXTRA 8 - FEEDBACK UX PADRONIZADO (SEM ALERT NATIVO)
+==================================================
+
+Objetivo:
+- Melhorar UX funcional removendo `window.alert` e adotando feedback consistente nas telas operacionais.
+
+Entregas:
+- Novo contexto global de feedback:
+  - `FeedbackProvider` + hook `useFeedback` com toasts para erro/sucesso/info.
+- Aplicacao integrada no app autenticado.
+- Substituicao de `window.alert` nas rotas e componentes operacionais:
+  - Layout (logout)
+  - Dashboard
+  - Jornada
+  - Estoque
+  - SmartModal
+  - Fornos
+  - Expedicao
+  - Inventario
+- Checklist de pendencias atualizado em `BUGS/falta_sistema.txt` marcando essa parte como concluida.
+
+Arquivos alterados:
+- `src/contexts/FeedbackContext.jsx`
+- `src/App.jsx`
+- `src/components/Layout.jsx`
+- `src/components/SmartModal.jsx`
+- `src/pages/Dashboard.jsx`
+- `src/pages/Jornada.jsx`
+- `src/pages/Estoque.jsx`
+- `src/pages/Forno.jsx`
+- `src/pages/Expedicao.jsx`
+- `src/pages/Inventario.jsx`
+- `BUGS/falta_sistema.txt`
+
+==================================================
+RODADA EXTRA 9 - MATRIZ DE CANCELAMENTO POR ETAPA
+==================================================
+
+Objetivo:
+- Fechar regra de cancelamento por etapa sem depender de documento externo, com politica explicita no backend e no fallback local.
+
+Matriz aplicada:
+- `pendente`: `admin` e `operacao` podem cancelar.
+- `producao`: apenas `admin` pode cancelar.
+- `logistica`: apenas `admin` pode cancelar.
+- `concluido/cancelado`: cancelamento bloqueado.
+
+Entregas:
+- Nova migration aplicada no Supabase remoto:
+  - `20260426022000_beca_cancel_matrix_by_stage.sql`
+- Backend:
+  - funcao `beca_can_cancel_order(role, status)`
+  - `beca_advance_order_status(...)` atualizada para validar cancelamento por etapa
+- Frontend/local fallback:
+  - regra espelhada em `canCancelByRole(...)`
+  - `StoreContext` atualizado para validar cancelamento com mensagens por etapa
+- Testes:
+  - unitario adicionado para matriz de cancelamento em `businessRules.test.js`
+
+Arquivos alterados:
+- `supabase/migrations/20260426022000_beca_cancel_matrix_by_stage.sql`
+- `src/utils/businessRules.js`
+- `src/utils/businessRules.test.js`
+- `src/contexts/StoreContext.jsx`
+- `BUGS/falta_sistema.txt`

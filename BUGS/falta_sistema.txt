@@ -1,0 +1,63 @@
+LISTA DIRETA DO QUE FALTA (ESTADO ATUAL AUDITADO)
+Data da auditoria: 2026-04-25
+
+PRIORIDADE MAXIMA
+1) RELATORIOS REAIS
+[x] KPIs minimos implementados: pedidos por status, ruptura, consumo, vencimentos proximos.
+[x] Dados reais na tela de relatorios (sem placeholder).
+
+2) MODULO DE FORNOS REAL
+[x] OPs reais com iniciar/finalizar/cancelar via RPC.
+[x] Modelar eventos de equipamento (quebra, manutencao, parada, retomada) no backend.
+[x] Exibir timeline/historico de eventos de equipamento na tela de Fornos.
+
+3) LEDGER DE ESTOQUE COMPLETO
+[x] Fluxos ENTRADA/SAIDA/AJUSTE/PERDA/DEVOLUCAO implementados.
+[ ] Formalizar ESTORNO como fluxo explicito no ledger (com motivo e vinculo ao movimento origem).
+[ ] Padronizar obrigatoriedade de motivo por tipo de movimento conforme regra operacional final.
+
+4) REGRAS DE LOTE, CUSTO E RASTREABILIDADE
+[x] FEFO com fallback FIFO implementado.
+[x] Custo por lote e custo por movimento implementados.
+[ ] Documentar regra operacional de quando aplicar FEFO/FIFO por tipo de item.
+[ ] Implementar genealogia de lote (insumo/lote origem -> lote final produzido) em estrutura dedicada.
+
+5) AJUSTE DE REGRA DE CANCELAMENTO
+[x] Cancelamento restrito e transicoes validas implementadas.
+[x] Definir matriz oficial de permissao por etapa (pendente/producao/logistica).
+[x] Aplicar a matriz final no backend e cobrir com testes.
+
+PRIORIDADE ALTA
+6) REDUZIR DEPENDENCIA DE LOCALSTORAGE
+[x] Operacoes criticas migradas para RPC backend.
+[ ] Remover localStorage como fonte principal (manter no maximo cache/apoio de sessao).
+[ ] Eliminar bootstrap de dados mock em ambiente operacional remoto.
+
+7) AUDITORIA MAIS FORTE
+[x] Registro de ator no backend (actor_user_id) implementado.
+[ ] Padronizar shape unico de auditoria (quem/quando/antes/depois/motivo) em 100% dos eventos criticos.
+[ ] Normalizar naming de ator no contrato front/back (actorUserId vs actor_user_id).
+
+8) TESTES AUTOMATIZADOS
+[x] Unitarios de regras criticas (conversao, baixa, transicao, estorno) existentes.
+[x] Teste da camada API frontend->RPC com mock existente.
+[ ] Criar testes de integracao frontend + Supabase real (sem mock) para fluxos centrais.
+[ ] Criar E2E completo: pedido pendente -> producao -> logistica -> concluido.
+[ ] Criar E2E de cancelamento com estorno validando saldo/lotes.
+
+9) PIPELINE DE QUALIDADE
+[x] CI com lint + testes + build + e2e smoke ativo.
+[ ] Adicionar gate de integracao real com Supabase (ambiente isolado de teste).
+
+PRIORIDADE MEDIA
+10) OPERACAO E CONFIABILIDADE
+[x] Backup/restore e runbook basico existentes.
+[x] Monitor de erro runtime implementado.
+[ ] Incluir plano explicito de rollback de deploy (passo a passo + criterios de acionamento).
+[ ] Definir monitoramento de performance e SLO/SLI operacional.
+
+11) UX FUNCIONAL DE SISTEMA REAL
+[x] Parte dos estados loading/erro/vazio implementada.
+[ ] Cobrir loading/erro/vazio/sucesso em todas as telas principais de forma consistente.
+[x] Substituir `window.alert` por feedback padronizado (toast/inline) nas rotas operacionais.
+[ ] Melhorar acessibilidade (foco, teclado, contraste, rotulos) e performance para volume (paginacao/virtualizacao quando necessario).
