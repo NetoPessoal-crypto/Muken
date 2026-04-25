@@ -94,6 +94,18 @@ export async function listEquipmentEventsRemote(equipmentId = null, limit = 100)
   return { success: true, data: Array.isArray(data) ? data : [] };
 }
 
+export async function getLotGenealogyRemote({ loteId = null, productId = null, orderId = null } = {}) {
+  const client = ensureClient();
+  if (!client.ok) return { success: false, error: client.error };
+  const { data, error } = await supabase.rpc('beca_get_lot_genealogy', {
+    p_lote_id: loteId,
+    p_product_id: productId,
+    p_order_id: orderId,
+  });
+  if (error) return fail(error);
+  return { success: true, data: Array.isArray(data) ? data : [] };
+}
+
 export async function logEquipmentEventRemote(payload) {
   const client = ensureClient();
   if (!client.ok) return { success: false, error: client.error };

@@ -182,6 +182,9 @@ begin
         insert into public.beca_stock_moves (id, tenant_id, kind, ref_type, ref_id, product_id, lote_id, qty, unit, at)
         values (_move_id, _tenant_id, 'CONSUMO', 'order', _order.id, _ing.id, _lot.lote_id, _take, _ing.unit, _now);
 
+        -- record parent lot usage for genealogy
+        _genealogy_tmp := _genealogy_tmp || jsonb_build_array(jsonb_build_object('parent_id', _lot.id::text, 'qty', _take, 'unit', _ing.unit));
+
         _move_refs := _move_refs || to_jsonb(_move_id);
         _remaining := round((_remaining - _take)::numeric, 6);
       end loop;

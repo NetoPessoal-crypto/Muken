@@ -31,6 +31,29 @@ jobs:
       - name: Build
         run: npm run build
 
+  migrations-check:
+    runs-on: ubuntu-latest
+    needs: quality
+    if: contains(github.event.head_commit.message, 'migration') || contains(github.event.head_commit.message, 'migrate') || startsWith(github.ref, 'refs/heads/migrations')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run DB genealogy test (uses .env.supabase secrets)
+        env:
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: node scripts/db-run-genealogy-test.mjs
+
   e2e-smoke:
     runs-on: ubuntu-latest
     needs: quality

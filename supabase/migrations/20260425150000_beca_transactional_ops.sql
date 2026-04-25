@@ -322,6 +322,9 @@ declare
   _move_id text;
   _move record;
   _move_refs jsonb;
+  _genealogy_tmp jsonb := '[]'::jsonb; -- temporary store of consumed parent lots to link to produced child lot
+  _output_lote_row_id uuid;
+  _child_lot_id uuid;
 begin
   if _tenant_id is null then
     raise exception 'Tenant nao encontrado para o usuario atual.';
@@ -445,6 +448,9 @@ begin
         insert into public.beca_stock_moves (id, tenant_id, kind, ref_type, ref_id, product_id, lote_id, qty, unit, at)
         values (_move_id, _tenant_id, 'CONSUMO', 'order', _order.id, _ing.id, _lot.lote_id, _take, _ing.unit, _now);
 
+        -- record parent lot usage for genealogy
+        _genealogy_tmp := _genealogy_tmp || jsonb_build_array(jsonb_build_object('parent_id', _lot.id::text, 'qty', _take, 'unit', _ing.unit));
+
         _move_refs := _move_refs || to_jsonb(_move_id);
         _remaining := round((_remaining - _take)::numeric, 6);
       end loop;
@@ -463,13 +469,27 @@ begin
     _output_lote := public.beca_make_id('LPR');
 
     insert into public.beca_product_lots (tenant_id, product_id, lote_id, qtd, validade)
-    values (_tenant_id, _prod_final.id, _output_lote, _output_qty, date '2099-12-31');
+    values (_tenant_id, _prod_final.id, _output_lote, _output_qty, date '2099-12-31')
+    returning id into _output_lote_row_id;
 
     _move_id := public.beca_make_id('MOV');
     insert into public.beca_stock_moves (id, tenant_id, kind, ref_type, ref_id, product_id, lote_id, qty, unit, at)
     values (_move_id, _tenant_id, 'PRODUCAO_ENTRADA', 'order', _order.id, _prod_final.id, _output_lote, _output_qty, _prod_final.unit, _now);
 
     _move_refs := _move_refs || to_jsonb(_move_id);
+
+    -- persist genealogy: for each consumed parent lot, link to this produced child lot
+    for _req in select value from jsonb_array_elements(coalesce(_genealogy_tmp, '[]'::jsonb)) loop
+      insert into public.beca_lot_genealogy (tenant_id, parent_lot_uuid, child_lot_uuid, qty_used, unit, order_id)
+      values (
+        _tenant_id,
+        (_req->>'parent_id')::uuid,
+        _output_lote_row_id,
+        coalesce((_req->>'qty')::numeric, 0),
+        _req->>'unit',
+        _order.id
+      );
+    end loop;
 
     update public.beca_orders
     set estoque_baixado = true,
@@ -499,7 +519,7 @@ begin
       insert into public.beca_stock_moves (id, tenant_id, kind, ref_type, ref_id, product_id, lote_id, qty, unit, at)
       values (_move_id, _tenant_id, 'ESTORNO_CONSUMO', 'order', _order.id, _move.product_id, _move.lote_id, _move.qty, _move.unit, _now);
 
-      _move_refs := _move_refs || to_jsonb(_move_id);
+    _move_refs := _move_refs || to_jsonb(_move_id);
     end loop;
 
     for _move in

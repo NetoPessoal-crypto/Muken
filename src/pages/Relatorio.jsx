@@ -15,6 +15,7 @@ import {
   YAxis,
 } from 'recharts';
 import { useStore } from '../contexts/StoreContext';
+import { getLotGenealogyRemote } from '../services/operationsApi';
 
 const ORDER_STATUS_LABEL = {
   pendente: 'Pendente',
@@ -54,6 +55,43 @@ const toDayLabel = (value) => {
 
 export default function Relatorio() {
   const { orders, products, stockMoves, getEstoqueVirtual, getValorPatrimonial } = useStore();
+  const [geneQuery, setGeneQuery] = React.useState('');
+  const [geneResult, setGeneResult] = React.useState(null);
+  const [geneLoading, setGeneLoading] = React.useState(false);
+  const [geneError, setGeneError] = React.useState(null);
+
+  const handleGeneQuery = React.useCallback(async () => {
+    const q = String(geneQuery || '').trim();
+    if (!q) {
+      setGeneError('Informe um loteId ou orderId para buscar.');
+      setGeneResult(null);
+      return;
+    }
+
+    setGeneLoading(true);
+    setGeneError(null);
+    setGeneResult(null);
+    try {
+      // consulta por loteId primeiro
+      let res = await getLotGenealogyRemote({ loteId: q });
+      if (res.success && Array.isArray(res.data) && res.data.length === 0) {
+        // fallback: buscar por orderId
+        res = await getLotGenealogyRemote({ orderId: q });
+      }
+
+      if (!res.success) {
+        setGeneError(res.error || 'Erro na consulta');
+        setGeneResult(null);
+      } else {
+        setGeneResult(res.data || []);
+      }
+    } catch (err) {
+      setGeneError(err?.message || 'Erro inesperado');
+      setGeneResult(null);
+    } finally {
+      setGeneLoading(false);
+    }
+  }, [geneQuery]);
 
   const ordersByStatus = useMemo(() => {
     const base = ['pendente', 'producao', 'logistica', 'concluido', 'cancelado'].map((status) => ({
@@ -307,6 +345,52 @@ export default function Relatorio() {
             </table>
           </div>
         )}
+      </div>
+
+      <div className="bg-white border border-surface-container rounded-3xl p-6">
+        <h2 className="text-base font-black text-primary mb-4">Rastreabilidade de Lote</h2>
+        <div className="flex gap-2 items-center">
+          <input value={geneQuery} onChange={(e) => setGeneQuery(e.target.value)} placeholder="Informe loteId ou orderId" className="border px-3 py-2 rounded-lg flex-1" />
+          <button onClick={handleGeneQuery} className="bg-primary text-white px-4 py-2 rounded-lg">Buscar</button>
+        </div>
+        <div className="mt-4">
+          {geneLoading ? (
+            <p className="text-sm text-primary/60">Carregando...</p>
+          ) : geneResult == null ? (
+            <p className="text-sm text-primary/50">Nenhuma consulta realizada.</p>
+          ) : geneError ? (
+            <p className="text-sm text-error">Erro: {geneError}</p>
+          ) : Array.isArray(geneResult) && geneResult.length === 0 ? (
+            <p className="text-sm text-primary/50">Nenhum registro encontrado.</p>
+          ) : (
+            <div className="overflow-auto max-h-60">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-[11px] uppercase tracking-widest text-primary/40">
+                    <th className="py-2 pr-4">Parent Lot</th>
+                    <th className="py-2 pr-4">Child Lot</th>
+                    <th className="py-2 pr-4">Qty</th>
+                    <th className="py-2 pr-4">Unit</th>
+                    <th className="py-2 pr-4">Order</th>
+                    <th className="py-2 pr-4">At</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {geneResult.map((g) => (
+                    <tr key={g.id} className="border-t border-surface-container/70">
+                      <td className="py-2 pr-4 font-semibold text-primary">{g.parent_lot_id}</td>
+                      <td className="py-2 pr-4 text-primary/70">{g.child_lot_id}</td>
+                      <td className="py-2 pr-4 text-primary/80">{Number(g.qty_used)}</td>
+                      <td className="py-2 pr-4 text-primary/80">{g.unit}</td>
+                      <td className="py-2 pr-4 text-primary/80">{g.order_id}</td>
+                      <td className="py-2 pr-4 text-primary/80">{new Date(g.at).toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
