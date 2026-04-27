@@ -1,0 +1,25 @@
+name: Sync training (repo → Supabase Storage)
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'src/content/training.md'
+
+jobs:
+  push-to-storage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - name: Install deps
+        run: npm ci
+      - name: Push training.md to Supabase Storage
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          node scripts/push_training_to_storage.mjs --url "$SUPABASE_URL" --key "$SUPABASE_SERVICE_ROLE_KEY" --bucket training --object training/training.md --in src/content/training.md

@@ -1,0 +1,34 @@
+name: Sync training (Supabase Storage → repo PR)
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # daily at 02:00 UTC
+  workflow_dispatch:
+
+jobs:
+  pull-from-storage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - name: Install deps
+        run: npm ci
+      - name: Download training.md from Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          node scripts/sync_training_from_storage.mjs --url "$SUPABASE_URL" --key "$SUPABASE_SERVICE_ROLE_KEY" --bucket training --object training/training.md --out src/content/training.md
+      - name: Create PR if changed
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: sync training.md from supabase storage'
+          branch: 'sync/training-from-storage'
+          title: 'Sync training.md from Supabase Storage'
+          body: |
+            This PR updates src/content/training.md with the latest content from Supabase Storage.
+          labels: automated
